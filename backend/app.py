@@ -1,25 +1,33 @@
 from flask import Flask, request, jsonify
-from textblob import TextBlob
 from flask_cors import CORS
+from textblob import TextBlob
 
 app = Flask(__name__)
-CORS(app)  # Frontend bağlantısı için CORS açılır
 
-@app.route("/analyze", methods=["POST"])
+CORS(app)
+
+@app.route('/analyze', methods=['POST'])
 def analyze():
-    data = request.get_json()
-    text = data.get("text", "")
-    blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
+    try:
+        print("here")
+        data = request.get_json(force=True)
+        text = data.get("text", "")
+        blob = TextBlob(text)
+        polarity = blob.sentiment.polarity
 
-    if polarity > 0:
-        sentiment = "positive"
-    elif polarity < 0:
-        sentiment = "negative"
-    else:
-        sentiment = "neutral"
+        if polarity > 0:
+            sentiment = "positive"
+        elif polarity < 0:
+            sentiment = "negative"
+        else:
+            sentiment = "neutral"
 
-    return jsonify({"sentiment": sentiment, "polarity": polarity})
+        return jsonify({
+            "sentiment": sentiment,
+            "polarity": polarity
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)
